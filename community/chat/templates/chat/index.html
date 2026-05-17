@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat Rooms</title>
+</head>
+<body>
+  <h2>Enter a Room</h2>
+  <input id="room-name-input" type="text" placeholder="Room name">
+  <button id="room-name-submit">Join</button>
+
+  <script>
+    document.querySelector('#room-name-submit').onclick = function() {
+      const roomName = document.querySelector('#room-name-input').value;
+      window.location.pathname = '/' + roomName + '/';
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+  {% if mode == 'signup' %}Sign Up{% else %}Login{% endif %} | Community
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+<link rel="stylesheet" href="{% static 'css/icons.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'dashboards:user_dashboard' %}" class="btn btn-sm btn-light">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <div>
+          {% if mode == 'signup' %}
+            <h2 class="mb-0"><span class="bi bi-person-plus-fill"></span>Sign Up</h2>
+            <p class="mb-0">Create your Community account</p>
+          {% else %}
+            <h2 class="mb-0"><span class="bi bi-chat-dots-fill"></span>Welcome Back</h2>
+            <p class="mb-0">Log in to your Community account</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-body">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-danger small">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST">
+        {% csrf_token %}
+        
+        {% if mode == 'signup' %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Username</label>
+            <input type="text" name="username" class="form-control" required value="{{ request.POST.username }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Email</label>
+            <input type="email" name="email" class="form-control" required value="{{ request.POST.email }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Password</label>
+            <input type="password" name="password1" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Confirm Password</label>
+            <input type="password" name="password2" class="form-control" required>
+          </div>
+        {% else %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Username</label>
+            <input type="text" name="username" class="form-control" required value="{{ request.POST.username }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Password</label>
+            <input type="password" name="password" class="form-control" required>
+          </div>
+        {% endif %}
+
+        <button type="submit" class="btn-auth">
+          {% if mode == 'signup' %}
+            <span class="bi bi-person-plus-fill me-1"></span> Sign Up
+          {% else %}
+            <span class="bi bi-box-arrow-in-right me-1"></span> Login
+          {% endif %}
+        </button>
+      </form>
+
+      <div class="switch-link">
+        {% if mode == 'signup' %}
+          <p class="text-muted mt-3">
+            Already have an account? <a href="{% url 'users:auth' %}?mode=login">Login here</a>
+          </p>
+        {% else %}
+          <p class="text-muted mt-3">
+            New here? <a href="{% url 'users:auth' %}?mode=signup">Create an account</a>
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation and enhancement
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitBtn = document.querySelector('.btn-auth');
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            // Basic client-side validation
+            const username = form.querySelector('input[name="username"]');
+            const password = form.querySelector('input[name="password"], input[name="password1"]');
+            
+            if (username && password) {
+                if (username.value.trim().length < 3) {
+                    e.preventDefault();
+                    alert('Username must be at least 3 characters long');
+                    username.focus();
+                    return;
+                }
+                
+                if (password.value.length < 6) {
+                    e.preventDefault();
+                    alert('Password must be at least 6 characters long');
+                    password.focus();
+                    return;
+                }
+            }
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="bi bi-box-arrow-in-right me-1"></span> Processing...';
+        });
+    }
+    
+    // Password confirmation validation for signup
+    const password1 = document.querySelector('input[name="password1"]');
+    const password2 = document.querySelector('input[name="password2"]');
+    
+    if (password1 && password2) {
+        password2.addEventListener('input', function() {
+            if (password1.value !== password2.value) {
+                password2.setCustomValidity('Passwords do not match');
+            } else {
+                password2.setCustomValidity('');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+/* Bootstrap Icons Fallback for Offline Use */
+
+/* Basic icon replacements */
+.bi-person-plus-fill::before {
+    content: "➕";
+    font-size: 1.2em;
+}
+
+.bi-chat-dots-fill::before {
+    content: "💬";
+    font-size: 1.2em;
+}
+
+.bi-box-arrow-in-right::before {
+    content: "→";
+    font-size: 1.2em;
+}
+
+/* Alternative using Unicode symbols */
+.bi {
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    margin-right: 0.5em;
+}
+
+.bi-person-plus-fill::before {
+    content: "👤+";
+}
+
+.bi-chat-dots-fill::before {
+    content: "💭";
+}
+
+.bi-box-arrow-in-right::before {
+    content: "📥";
+}

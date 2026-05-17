@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Profile Settings{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'users:profile' %}" class="btn btn-gradient btn-sm">
+              <i class="bi bi-arrow-left"></i> Back
+            </a>
+            <h3 class="mb-0">
+              <i class="bi bi-gear"></i> Profile Settings
+            </h3>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <div class="settings-section">
+            <h4><i class="bi bi-shield-lock"></i> Account Security</h4>
+            <p class="text-muted">Manage your account security settings.</p>
+            
+            <div class="mb-3">
+              <a href="#" class="btn btn-outline-primary">
+                <i class="bi bi-key"></i> Change Password
+              </a>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="settings-section">
+            <h4><i class="bi bi-bell"></i> Notification Preferences</h4>
+            <p class="text-muted">Control how you receive notifications.</p>
+            
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+              <label class="form-check-label" for="emailNotifications">
+                Email notifications
+              </label>
+            </div>
+            
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="pushNotifications" checked>
+              <label class="form-check-label" for="pushNotifications">
+                Push notifications
+              </label>
+            </div>
+            
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="messageNotifications" checked>
+              <label class="form-check-label" for="messageNotifications">
+                Message notifications
+              </label>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="settings-section">
+            <h4><i class="bi bi-eye"></i> Privacy Settings</h4>
+            <p class="text-muted">Control who can see your information.</p>
+            
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="profileVisibility" checked>
+              <label class="form-check-label" for="profileVisibility">
+                Make profile visible to everyone
+              </label>
+            </div>
+            
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="showOnlineStatus" checked>
+              <label class="form-check-label" for="showOnlineStatus">
+                Show online status
+              </label>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="settings-section">
+            <h4><i class="bi bi-trash"></i> Danger Zone</h4>
+            <p class="text-muted">Irreversible and destructive actions.</p>
+            
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-danger" onclick="confirmDeleteAccount()">
+                <i class="bi bi-person-x"></i> Delete Account
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left"></i> Back to Profile
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDeleteAccount() {
+  if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    // Add delete account logic here
+    alert('Account deletion feature coming soon.');
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+<!-- chats_mini.html -->
+<div class="dashboard">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="header">💬 Chats Center</div>
+    <div class="tabs">
+      <button class="tab active" onclick="openTab('rooms')">Rooms</button>
+    </div>
+    <div id="rooms" class="content active">
+      <ul class="chat-list">
+        {% for r in rooms %}
+          <li onclick="openChat({{ r.id }}, '{{ r.name|escapejs }}')">{{ r.name }}</li>
+        {% empty %}
+          <li>No rooms available</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Chat section -->
+  <div class="chat-section">
+    <div class="chat-window" id="chatBox">
+      <div class="message received">Select a chat room...</div>
+    </div>
+    <div class="input-area">
+      <input type="text" id="chatInput" placeholder="Type a message..." />
+      <button onclick="sendChatMessage()">➤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentRoomId = null;
+
+function openTab(tabId){
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function openChat(roomId, name){
+  currentRoomId = roomId;
+  document.getElementById('chatBox').innerHTML = `<div class="message received">Loading ${name}...</div>`;
+  fetchMessages();
+}
+
+function fetchMessages(){
+  if(!currentRoomId) return;
+  fetch(`/chat/messages/${currentRoomId}/`)
+    .then(res=>res.json())
+    .then(data=>{
+      const chatBox = document.getElementById('chatBox');
+      chatBox.innerHTML = '';
+      data.forEach(msg=>{
+        const div = document.createElement('div');
+        div.classList.add('message', msg.sent_by_me?'sent':'received');
+        div.innerHTML = `<strong>${msg.user}:</strong> ${msg.content}`;
+        chatBox.appendChild(div);
+      });
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+}
+
+function sendChatMessage(){
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if(!msg || !currentRoomId) return;
+  fetch('/chat/send/',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/x-www-form-urlencoded',
+      'X-CSRFToken':'{{ csrf_token }}'
+    },
+    body:`message=${encodeURIComponent(msg)}&room_id=${currentRoomId}`
+  }).then(res=>res.json()).then(data=>{
+    input.value='';
+    fetchMessages();
+  });
+}
+
+// Auto-refresh every 2 seconds
+setInterval(fetchMessages,2000);
+</script>

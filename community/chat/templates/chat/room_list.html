@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Chat Rooms{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'dashboards:user_dashboard' %}" class="btn btn-gradient btn-sm">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+    <h2 class="mb-0">Support Chat Rooms</h2>
+  </div>
+<ul class="list-group">
+  {% for room in rooms %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <span>{{ room.name }}</span>
+      <a class="btn btn-sm btn-primary" href="{% url 'chat:room' room.name %}">Join</a>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

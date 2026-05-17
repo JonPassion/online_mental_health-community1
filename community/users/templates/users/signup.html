@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Sign Up | Community{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .signup-card {
+    max-width: 420px;
+    width: 100%;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    animation: fadeIn 0.6s ease-in-out;
+  }
+
+  .signup-header {
+    background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+    color: white;
+    padding: 30px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .signup-header a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+
+  .signup-header a:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .signup-header h2 {
+    font-weight: 700;
+  }
+
+  .form-control {
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .btn-signup {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .btn-signup:hover {
+    transform: scale(1.02);
+    background: linear-gradient(135deg, #5d0eca 0%, #2364e5 100%);
+  }
+
+  .login-link {
+    text-align: center;
+    margin-top: 15px;
+  }
+
+  .login-link a {
+    text-decoration: none;
+    color: #2575fc;
+    font-weight: 600;
+  }
+
+  .login-link a:hover {
+    text-decoration: underline;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<div class="signup-card">
+  <div class="signup-header">
+    <a href="{% url 'dashboards:user_dashboard' %}">← Back</a>
+    <div>
+      <h2 class="mb-0"><i class="bi bi-person-plus-fill"></i> Sign Up</h2>
+    </div>
+  </div>
+{%endblock%}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Tenants{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-building"></i> Manage Tenants</h2>
+    <a href="{% url 'tenants:create_tenant' %}" class="btn btn-primary">
+      <i class="bi bi-plus-circle"></i> Create New Tenant
+    </a>
+  </div>
+
+  <div class="row">
+    {% for tenant in tenants %}
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">{{ tenant.name }}</h5>
+            <span class="badge bg-{{ tenant.is_active|yesno:'success,secondary' }}">
+              {{ tenant.is_active|yesno:'Active,Inactive' }}
+            </span>
+          </div>
+          <div class="card-body">
+            <p class="card-text">
+              <strong>Schema:</strong> {{ tenant.schema_name }}<br>
+              <strong>Plan:</strong> {{ tenant.get_subscription_plan_display }}<br>
+              <strong>Users:</strong> {{ tenant.get_user_count }}/{{ tenant.max_users }}<br>
+              <strong>Created:</strong> {{ tenant.created_on|date:"M d, Y" }}
+            </p>
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'tenants:tenant_detail' tenant.pk %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-eye"></i> View
+              </a>
+              {% if tenant.owner == request.user %}
+                <a href="{% url 'tenants:edit_tenant_settings' tenant.pk %}" class="btn btn-outline-secondary btn-sm">
+                  <i class="bi bi-gear"></i> Settings
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="alert alert-info text-center">
+          <i class="bi bi-info-circle"></i> No tenants found. Create your first tenant to get started!
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

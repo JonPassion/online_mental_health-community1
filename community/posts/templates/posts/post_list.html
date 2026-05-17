@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Community Posts{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'dashboards:user_dashboard' %}" class="btn btn-gradient btn-sm">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+    <h2 class="mb-0">Community Discussions</h2>
+    <div class="ms-auto">
+      <a class="btn btn-primary" href="{% url 'posts:post_create' %}">
+        <i class="bi bi-plus-circle"></i> New Post
+      </a>
+    </div>
+  </div>
+
+{% for post in posts %}
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5><a href="{% url 'posts:post_detail' post.id %}">{{ post.title }}</a></h5>
+      <p>{{ post.content|truncatewords:25 }}</p>
+      <small>by {{ post.author.username }} on {{ post.created_at|date:"M d, Y" }}</small>
+    </div>
+  </div>
+{% empty %}
+  <p>No posts yet.</p>
+{% endfor %}
+{% endblock %}

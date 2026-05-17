@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ profile.user.username }}'s Profile{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+  <!-- Cover Picture Section -->
+  <div class="profile-cover" style="background-image: url('{{ profile.get_cover_picture_url }}');">
+    <div class="cover-overlay">
+      {% if is_owner %}
+        <div class="cover-actions">
+          <label for="cover-upload" class="btn btn-sm btn-light">
+            <i class="bi bi-camera"></i> Change Cover
+          </label>
+          <input type="file" id="cover-upload" accept="image/*" style="display: none;">
+          {% if profile.cover_picture %}
+            <button class="btn btn-sm btn-danger" onclick="removeCoverPicture()">
+              <i class="bi bi-trash"></i> Remove
+            </button>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Profile Header -->
+  <div class="profile-header">
+    <div class="profile-picture-container">
+      <img src="{{ profile.get_profile_picture_url }}" alt="{{ profile.user.username }}" class="profile-picture">
+      {% if is_owner %}
+        <div class="profile-picture-actions">
+          <label for="profile-upload" class="btn btn-sm btn-primary">
+            <i class="bi bi-camera"></i>
+          </label>
+          <input type="file" id="profile-upload" accept="image/*" style="display: none;">
+          {% if profile.profile_picture %}
+            <button class="btn btn-sm btn-danger" onclick="removeProfilePicture()">
+              <i class="bi bi-trash"></i>
+            </button>
+          {% endif %}
+        </div>
+      {% endif %}
+      
+      {% if profile.is_verified %}
+        <div class="verified-badge">
+          <i class="bi bi-patch-check-fill"></i>
+        </div>
+      {% endif %}
+    </div>
+    
+    <div class="profile-info">
+      <h1 class="profile-name">{{ profile.full_name }}</h1>
+      <p class="profile-username">@{{ profile.user.username }}</p>
+      
+      <div class="profile-stats">
+        <div class="stat">
+          <span class="stat-number">{{ profile.user.activities.count }}</span>
+          <span class="stat-label">Activities</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">{{ profile.user.notifications.count }}</span>
+          <span class="stat-label">Notifications</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">{{ profile.created_at|timesince }}</span>
+          <span class="stat-label">Member</span>
+        </div>
+      </div>
+    </div>
+    
+    {% if is_owner %}
+      <div class="profile-actions">
+        <a href="{% url 'users:edit_profile' %}" class="btn btn-primary">
+          <i class="bi bi-pencil"></i> Edit Profile
+        </a>
+        <a href="{% url 'users:profile_settings' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-gear"></i> Settings
+        </a>
+      </div>
+    {% else %}
+      <div class="profile-actions">
+        <button class="btn btn-primary" onclick="startDirectChat({{ profile.user.id }}, '{{ profile.user.username }}')">
+          <i class="bi bi-chat-dots"></i> Message
+        </button>
+        <button class="btn btn-outline-secondary">
+          <i class="bi bi-person-plus"></i> Follow
+        </button>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Profile Content -->
+  <div class="profile-content">
+    <div class="profile-sidebar">
+      <!-- Basic Info -->
+      <div class="profile-section">
+        <h3><i class="bi bi-person"></i> About</h3>
+        {% if profile.bio %}
+          <p class="profile-bio">{{ profile.bio }}</p>
+        {% else %}
+          <p class="text-muted">No bio added yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Contact Info -->
+      <div class="profile-section">
+        <h3><i class="bi bi-info-circle"></i> Contact Info</h3>
+        <div class="info-list">
+          {% if profile.location %}
+            <div class="info-item">
+              <i class="bi bi-geo-alt"></i>
+              <span>{{ profile.location }}</span>
+            </div>
+          {% endif %}
+          
+          {% if profile.website %}
+            <div class="info-item">
+              <i class="bi bi-globe"></i>
+              <a href="{{ profile.website }}" target="_blank">{{ profile.website }}</a>
+            </div>
+          {% endif %}
+          
+          {% if profile.phone %}
+            <div class="info-item">
+              <i class="bi bi-telephone"></i>
+              <span>{{ profile.phone }}</span>
+            </div>
+          {% endif %}
+          
+          {% if profile.birth_date %}
+            <div class="info-item">
+              <i class="bi bi-calendar"></i>
+              <span>{{ profile.birth_date|date:"F d, Y" }} ({{ profile.birth_date|timesince }} old)</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Account Info -->
+      <div class="profile-section">
+        <h3><i class="bi bi-shield-check"></i> Account</h3>
+        <div class="info-list">
+          <div class="info-item">
+            <i class="bi bi-envelope"></i>
+            <span>{{ profile.user.email }}</span>
+          </div>
+          <div class="info-item">
+            <i class="bi bi-calendar-check"></i>
+            <span>Joined {{ profile.user.date_joined|date:"F d, Y" }}</span>
+          </div>
+          <div class="info-item">
+            <i class="bi bi-clock"></i>
+            <span>Last active {{ profile.user.presence.last_seen|timesince }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-main">
+      <!-- Recent Activity -->
+      <div class="profile-section">
+        <h3><i class="bi bi-clock-history"></i> Recent Activity</h3>
+        <div class="activity-list">
+          {% for activity in profile.user.activities.all|slice:":5" %}
+            <div class="activity-item">
+              <div class="activity-icon">
+                {% if activity.activity_type == 'message_sent' %}
+                  <i class="bi bi-chat-dots"></i>
+                {% elif activity.activity_type == 'post_created' %}
+                  <i class="bi bi-file-text"></i>
+                {% elif activity.activity_type == 'login' %}
+                  <i class="bi bi-box-arrow-in-right"></i>
+                {% else %}
+                  <i class="bi bi-circle"></i>
+                {% endif %}
+              </div>
+              <div class="activity-content">
+                <p class="activity-text">{{ activity.description }}</p>
+                <span class="activity-time">{{ activity.timestamp|timesince }}</span>
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-muted">No recent activity.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+  <div class="loading-spinner">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p>Uploading...</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Profile picture upload
+document.getElementById('profile-upload').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    uploadProfilePicture(file);
+  }
+});
+
+// Cover picture upload
+document.getElementById('cover-upload').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    uploadCoverPicture(file);
+  }
+});
+
+function uploadProfilePicture(file) {
+  const formData = new FormData();
+  formData.append('profile_picture', file);
+  
+  showLoading();
+  
+  fetch('/users/upload-profile-picture/', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    hideLoading();
+    if (data.success) {
+      // Update profile picture
+      document.querySelector('.profile-picture').src = data.profile_picture_url;
+      showAlert('Profile picture updated successfully!', 'success');
+    } else {
+      showAlert(data.error || 'Upload failed', 'error');
+    }
+  })
+  .catch(error => {
+    hideLoading();
+    showAlert('Upload failed', 'error');
+  });
+}
+
+function uploadCoverPicture(file) {
+  const formData = new FormData();
+  formData.append('cover_picture', file);
+  
+  showLoading();
+  
+  fetch('/users/upload-cover-picture/', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    hideLoading();
+    if (data.success) {
+      // Update cover picture
+      document.querySelector('.profile-cover').style.backgroundImage = `url('${data.cover_picture_url}')`;
+      showAlert('Cover picture updated successfully!', 'success');
+    } else {
+      showAlert(data.error || 'Upload failed', 'error');
+    }
+  })
+  .catch(error => {
+    hideLoading();
+    showAlert('Upload failed', 'error');
+  });
+}
+
+function removeProfilePicture() {
+  if (confirm('Are you sure you want to remove your profile picture?')) {
+    fetch('/users/remove-profile-picture/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken')
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Update profile picture to default
+        document.querySelector('.profile-picture').src = '/static/images/default_profile.png';
+        showAlert('Profile picture removed successfully!', 'success');
+      } else {
+        showAlert(data.error || 'Failed to remove', 'error');
+      }
+    });
+  }
+}
+
+function removeCoverPicture() {
+  if (confirm('Are you sure you want to remove your cover picture?')) {
+    fetch('/users/remove-cover-picture/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken')
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Update cover picture to default
+        document.querySelector('.profile-cover').style.backgroundImage = "url('/static/images/default_cover.png')";
+        showAlert('Cover picture removed successfully!', 'success');
+      } else {
+        showAlert(data.error || 'Failed to remove', 'error');
+      }
+    });
+  }
+}
+
+function showLoading() {
+  document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+function showAlert(message, type) {
+  // Create alert element
+  const alert = document.createElement('div');
+  alert.className = `alert alert-${type} alert-dismissible fade show`;
+  alert.innerHTML = `
+    ${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `;
+  
+  // Add to page
+  const container = document.querySelector('.profile-container');
+  container.insertBefore(alert, container.firstChild);
+  
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    alert.remove();
+  }, 5000);
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+{% endblock %}

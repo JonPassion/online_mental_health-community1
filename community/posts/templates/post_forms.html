@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+
+{% block title %}{{ post|default:'New Post' }}{% endblock %}
+
+
+{% block content %}
+<div class="container py-4">
+<div class="card p-4 shadow-sm">
+<h3 class="mb-4">{% if post %}Edit Post{% else %}Create a New Post{% endif %}</h3>
+
+
+<form method="post">
+{% csrf_token %}
+{{ form.non_field_errors }}
+
+
+<div class="mb-3">
+{{ form.title.label_tag }}
+{{ form.title }}
+{{ form.title.errors }}
+</div>
+
+
+<div class="mb-3">
+{{ form.content.label_tag }}
+{{ form.content }}
+{{ form.content.errors }}
+</div>
+
+
+<button type="submit" class="btn btn-primary">
+{% if post %}Save Changes{% else %}Publish{% endif %}
+</button>
+<a href="{% url 'post_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+</form>
+</div>
+</div>
+{% endblock %}

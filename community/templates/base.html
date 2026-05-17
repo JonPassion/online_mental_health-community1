@@ -1,0 +1,316 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Community{% endblock %}</title>
+  
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  
+  <!-- Extra CSS Block -->
+  {% block extra_css %}{% endblock %}
+
+  <style>
+    body {
+      background: #f8f9fb;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      color: white !important;
+      font-size: 1.4rem;
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.85) !important;
+      font-weight: 500;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .nav-link:hover {
+      color: #fff !important;
+      transform: translateY(-1px);
+    }
+
+    .nav-link.active {
+      color: #fff !important;
+      font-weight: 600;
+      border-bottom: 2px solid #fff;
+    }
+
+    .btn-gradient {
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: scale(1.03);
+      background: linear-gradient(135deg, #5d0eca 0%, #2364e5 100%);
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem;
+    }
+
+    .right-sidebar {
+      width: 280px;
+      background: white;
+      border-left: 1px solid #e0e0e0;
+      padding: 20px;
+      position: fixed;
+      right: 0;
+      top: 70px;
+      height: calc(100vh - 70px);
+      overflow-y: auto;
+      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .right-sidebar h4 {
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #6a11cb;
+    }
+
+    .right-sidebar .nav-item {
+      margin-bottom: 8px;
+    }
+
+    .right-sidebar .nav-link {
+      color: #2c3e50 !important;
+      padding: 10px 15px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .right-sidebar .nav-link:hover {
+      background: #f8f9fa;
+      color: #6a11cb !important;
+      transform: translateX(-3px);
+    }
+
+    .right-sidebar .nav-link.active {
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      color: white !important;
+    }
+
+    .right-sidebar .nav-link i {
+      font-size: 18px;
+      color: #6a11cb !important;
+    }
+
+    .right-sidebar .nav-link:hover i {
+      color: #6a11cb !important;
+    }
+
+    .right-sidebar .nav-link.active i {
+      color: white !important;
+    }
+
+    .right-sidebar .section-divider {
+      height: 1px;
+      background: #e0e0e0;
+      margin: 20px 0;
+    }
+
+    .right-sidebar .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .right-sidebar .user-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .right-sidebar .user-details h5 {
+      margin: 0;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .right-sidebar .user-details p {
+      margin: 0;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .content-wrapper {
+      display: flex;
+      margin-right: 280px;
+    }
+
+    @media (max-width: 992px) {
+      .right-sidebar {
+        display: none;
+      }
+      .content-wrapper {
+        margin-right: 0;
+      }
+    }
+
+    footer {
+      background: #111;
+      color: #bbb;
+      text-align: center;
+      padding: 15px 0;
+      margin-top: auto;
+      font-size: 0.9rem;
+    }
+
+  </style>
+</head>
+
+<body>
+ <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-3">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-primary" href="/">Community</a>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        {% if user.is_authenticated %}
+          <li class="nav-item me-3">
+            <a class="nav-link text-dark" href="{% if user.is_staff or user.is_superuser %}{% url 'dashboards:admin_dashboard' %}{% else %}{% url 'dashboards:user_dashboard' %}{% endif %}">
+              Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-gradient btn-sm" href="{% url 'users:logout' %}">
+              <i class="bi bi-box-arrow-right me-1"></i> Logout
+            </a>
+          </li>
+        {% else %}
+          <li class="nav-item me-2">
+            <a class="nav-link text-dark" href="{% url 'users:auth' %}?mode=login">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-gradient btn-sm" href="{% url 'users:auth' %}?mode=signup">
+              Sign Up
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  <!-- Main content -->
+  <div class="content-wrapper">
+    <main class="container">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Right Sidebar -->
+    <aside class="right-sidebar">
+      {% if user.is_authenticated %}
+        <div class="user-info">
+          <div class="user-avatar">
+            {{ user.username|first|upper }}
+          </div>
+          <div class="user-details">
+            <h5>{{ user.username }}</h5>
+            <p>{{ user.email|truncatechars:20 }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <h4><i class="bi bi-compass me-2"></i>Navigation</h4>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="{% if user.is_authenticated %}{% if user.is_staff or user.is_superuser %}{% url 'dashboards:admin_dashboard' %}{% else %}{% url 'dashboards:user_dashboard' %}{% endif %}{% else %}{% url 'users:auth' %}{% endif %}">
+          <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a class="nav-link" href="{% url 'chat:dashboard' %}">
+          <i class="bi bi-chat-dots"></i> Chat
+        </a>
+        <a class="nav-link" href="{% url 'posts:post_list' %}">
+          <i class="bi bi-journal-text"></i> Posts
+        </a>
+        <a class="nav-link" href="{% url 'users:profile' %}">
+          <i class="bi bi-person"></i> Profile
+        </a>
+      </nav>
+
+      <div class="section-divider"></div>
+
+      <h4><i class="bi bi-gear me-2"></i>Settings</h4>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="{% url 'users:edit_profile' %}">
+          <i class="bi bi-person-gear"></i> Edit Profile
+        </a>
+        <a class="nav-link" href="{% url 'users:profile_settings' %}">
+          <i class="bi bi-sliders"></i> Profile Settings
+        </a>
+      </nav>
+
+      <div class="section-divider"></div>
+
+      <h4><i class="bi bi-people me-2"></i>Community</h4>
+      <nav class="nav flex-column">
+        <a class="nav-link" href="{% url 'chat:room_list' %}">
+          <i class="bi bi-chat-square-dots"></i> Chat Rooms
+        </a>
+        <a class="nav-link" href="{% url 'tenants:tenant_list' %}">
+          <i class="bi bi-building"></i> Tenants
+        </a>
+      </nav>
+
+      {% if user.is_authenticated %}
+        <div class="section-divider"></div>
+        <a class="nav-link" href="{% url 'users:logout' %}">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+      {% endif %}
+    </aside>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/scripts.js' %}"></script>
+  
+  <!-- Extra JS Block -->
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

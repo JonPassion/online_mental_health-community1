@@ -1,0 +1,64 @@
+{% if request.user.is_authenticated and request.tenant %}
+<!-- Tenant Switcher Dropdown -->
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" id="tenantDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="bi bi-building"></i> {{ request.tenant.name }}
+  </a>
+  <ul class="dropdown-menu" aria-labelledby="tenantDropdown">
+    <li><h6 class="dropdown-header">{{ request.tenant.name }}</h6></li>
+    <li><hr class="dropdown-divider"></li>
+    
+    <!-- Current Tenant Info -->
+    <li><span class="dropdown-item-text">
+      <small class="text-muted">
+        Plan: {{ request.tenant.get_subscription_plan_display }}<br>
+        Users: {{ request.tenant.users.count }}/{{ request.tenant.max_users }}
+      </small>
+    </span></li>
+    <li><hr class="dropdown-divider"></li>
+    
+    <!-- Tenant Actions -->
+    <li>
+      <a class="dropdown-item" href="{% url 'tenants:tenant_detail' request.tenant.pk %}">
+        <i class="bi bi-info-circle"></i> Tenant Details
+      </a>
+    </li>
+    {% if request.is_tenant_admin %}
+    <li>
+      <a class="dropdown-item" href="{% url 'tenants:edit_tenant_settings' request.tenant.pk %}">
+        <i class="bi bi-gear"></i> Settings
+      </a>
+    </li>
+    {% endif %}
+    
+    <!-- Other Tenants -->
+    {% if user_tenants %}
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header">Switch Tenant</h6></li>
+    {% for tenant in user_tenants %}
+      {% if tenant.id != request.tenant.id %}
+      <li>
+        <a class="dropdown-item" href="{{ request.path }}?tenant_id={{ tenant.id }}">
+          {{ tenant.name }}
+        </a>
+      </li>
+      {% endif %}
+    {% endfor %}
+    {% endif %}
+    
+    <li><hr class="dropdown-divider"></li>
+    <li>
+      <a class="dropdown-item" href="{% url 'tenants:tenant_list' %}">
+        <i class="bi bi-grid"></i> All Tenants
+      </a>
+    </li>
+  </ul>
+</li>
+{% elif request.user.is_authenticated %}
+<!-- No Tenant - Show Create/Join -->
+<li class="nav-item">
+  <a class="nav-link" href="{% url 'tenants:tenant_list' %}">
+    <i class="bi bi-building"></i> Tenants
+  </a>
+</li>
+{% endif %}

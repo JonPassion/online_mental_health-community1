@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Chat - {{ room_name }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-lg rounded-4 overflow-hidden mx-auto" style="max-width:700px;">
+    <div class="card-header bg-gradient text-white py-3">
+      <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'chat:dashboard' %}" class="btn btn-sm btn-light">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <h4 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Room: {{ room_name }}</h4>
+      </div>
+    </div>
+
+    <div id="chat-log" class="card-body" style="height: 400px; overflow-y: auto; background: #f8f9fb;">
+      {% for msg in messages %}
+        <div class="mb-2">
+          <strong>{{ msg.user.username }}:</strong> {{ msg.content }}
+          <div class="text-muted small">{{ msg.timestamp|date:"H:i" }}</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="card-footer p-3">
+      <div class="input-group">
+        <input id="chat-message-input" type="text" class="form-control rounded-start-pill" placeholder="Type your message...">
+        <button id="chat-message-send" class="btn btn-gradient rounded-end-pill">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const roomName = "{{ room_name }}";
+  const chatSocket = new WebSocket(
+    'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+  );
+
+  const chatLog = document.querySelector('#chat-log');
+  const input = document.querySelector('#chat-message-input');
+  const sendBtn = document.querySelector('#chat-message-send');
+
+  chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('mb-2');
+    msgDiv.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
+    chatLog.appendChild(msgDiv);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  };
+
+  sendBtn.onclick = sendMessage;
+  input.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  function sendMessage() {
+    const message = input.value.trim();
+    if (message) {
+      chatSocket.send(JSON.stringify({ 'message': message }));
+      input.value = '';
+    }
+  }
+</script>
+{% endblock %}

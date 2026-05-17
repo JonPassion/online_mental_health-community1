@@ -1,0 +1,15 @@
+body {
+    background-color: #f9f9f9;
+}
+.btn-gradient {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  color: white !important;
+  border: none;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #5d0eca 0%, #2364e5 100%);
+}

@@ -1,0 +1,78 @@
+<!-- templates/nav.html -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <div class="container-fluid">
+    <!-- Brand -->
+    <a class="navbar-brand fw-bold" href="/">
+      🧠 Mental Community
+    </a>
+
+    <!-- Mobile toggle button -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarMain"
+      aria-controls="navbarMain"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar links -->
+    <div class="collapse navbar-collapse" id="navbarMain">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        {% if user.is_authenticated %}
+          <!-- Authenticated users -->
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}" href="{% url 'dashboards:user_dashboard' %}">
+              Dashboard
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {% if '/posts/' in request.path %}active{% endif %}" href="{% url 'posts:post_list' %}">Posts</a>
+              Posts
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {% if '/chat/' in request.path %}active{% endif %}" href="{% url 'chats:chat_home' %}">Chat</a>
+              Chat
+            </a>
+          </li>
+
+          {% if user.is_staff %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == '/dashboard/admin/' %}active{% endif %}" href="{% url 'dashboards:admin_dashboard' %}">
+              Admin
+            </a>
+          </li>
+          {% endif %}
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {{ user.username }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+              <li><a class="dropdown-item" href="{% url 'users:logout' %}">Logout</a></li>
+            </ul>
+          </li>
+
+        {% else %}
+          <!-- Guests -->
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == '/login/' %}active{% endif %}" href="{% url 'users:login' %}">
+              Login
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == '/register/' %}active{% endif %}" href="{% url 'users:register' %}">
+              Sign Up
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
