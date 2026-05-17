@@ -13,7 +13,7 @@ services:
         value: your-app-name.onrender.com
       - key: DATABASE_URL
         fromService:
-          type: postgres
+          type: psql
           name: postgres
           property: connectionString
       - key: REDIS_URL
