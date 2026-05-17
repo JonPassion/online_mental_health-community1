@@ -11,6 +11,11 @@ services:
         generateValue: true
       - key: ALLOWED_HOSTS
         value: your-app-name.onrender.com
+      - key: DATABASE_URL
+        fromService:
+          type: postgres
+          name: postgres
+          property: connectionString
       - key: REDIS_URL
         fromService:
           type: redis
@@ -20,4 +25,8 @@ services:
 
   - type: redis
     name: redis
+    plan: free
+
+  - type: postgres
+    name: postgres
     plan: free
