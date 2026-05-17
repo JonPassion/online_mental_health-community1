@@ -27,6 +27,6 @@ services:
     name: redis
     plan: free
 
-  - type: postgres
+  - type: psql
     name: postgres
     plan: free
