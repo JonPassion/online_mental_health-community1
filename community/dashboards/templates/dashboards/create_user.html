@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Create User | Admin{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:700px;">
+
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'dashboards:manage_users' %}" class="btn btn-gradient btn-sm">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+    <div>
+      <h2 class="mb-0 fw-bold">Create New User</h2>
+      <small class="text-muted">Fill in the details below to add a new account.</small>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="POST" novalidate>
+    {% csrf_token %}
+
+    <!-- Account Details -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white border-bottom fw-semibold py-3">
+        <i class="bi bi-person-circle text-primary"></i> Account Details
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-at"></i></span>
+              <input type="text" name="username" class="form-control"
+                     value="{{ form_data.username|default:'' }}"
+                     placeholder="e.g. johndoe" required autofocus>
+            </div>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" name="email" class="form-control"
+                     value="{{ form_data.email|default:'' }}"
+                     placeholder="user@example.com">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" name="password" id="password" class="form-control"
+                     placeholder="Set a password" required>
+              <button type="button" class="btn btn-outline-secondary" onclick="togglePwd('password', this)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Confirm Password <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+              <input type="password" name="confirm_password" id="confirm_password" class="form-control"
+                     placeholder="Repeat password" required>
+              <button type="button" class="btn btn-outline-secondary" onclick="togglePwd('confirm_password', this)">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Role -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white border-bottom fw-semibold py-3">
+        <i class="bi bi-shield-lock text-warning"></i> System Role
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">Controls what the user can access across the entire platform.</p>
+        <div class="row g-3">
+          {% for value, label, desc, color, icon in role_options %}
+          {% endfor %}
+
+          <div class="col-md-4">
+            <label class="role-card h-100 {% if form_data.system_role == 'user' or not form_data %}selected{% endif %}"
+                   for="role_user">
+              <input type="radio" name="system_role" id="role_user" value="user" class="d-none"
+                     {% if form_data.system_role == 'user' or not form_data %}checked{% endif %}
+                     onchange="selectRole(this)">
+              <div class="role-icon bg-secondary bg-opacity-10 text-secondary">
+                <i class="bi bi-person-fill"></i>
+              </div>
+              <div class="fw-semibold mt-2">Regular User</div>
+              <small class="text-muted">Standard member access. Can post and chat.</small>
+            </label>
+          </div>
+
+          <div class="col-md-4">
+            <label class="role-card h-100 {% if form_data.system_role == 'staff' %}selected{% endif %}"
+                   for="role_staff">
+              <input type="radio" name="system_role" id="role_staff" value="staff" class="d-none"
+                     {% if form_data.system_role == 'staff' %}checked{% endif %}
+                     onchange="selectRole(this)">
+              <div class="role-icon bg-warning bg-opacity-10 text-warning">
+                <i class="bi bi-person-badge-fill"></i>
+              </div>
+              <div class="fw-semibold mt-2">Staff</div>
+              <small class="text-muted">Access to the admin dashboard and moderation tools.</small>
+            </label>
+          </div>
+
+          <div class="col-md-4">
+            <label class="role-card h-100 {% if form_data.system_role == 'superuser' %}selected{% endif %}"
+                   for="role_superuser">
+              <input type="radio" name="system_role" id="role_superuser" value="superuser" class="d-none"
+                     {% if form_data.system_role == 'superuser' %}checked{% endif %}
+                     onchange="selectRole(this)">
+              <div class="role-icon bg-danger bg-opacity-10 text-danger">
+                <i class="bi bi-shield-fill-check"></i>
+              </div>
+              <div class="fw-semibold mt-2">Superuser</div>
+              <small class="text-muted">Full system control, including all admin features.</small>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tenant Assignment (optional) -->
+    {% if tenants %}
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white border-bottom fw-semibold py-3">
+        <i class="bi bi-building text-primary"></i> Tenant Assignment
+        <span class="badge bg-light text-muted border ms-2" style="font-weight:400;">Optional</span>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">Optionally add this user to a tenant community with a specific role.</p>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Tenant</label>
+            <select name="tenant_id" class="form-select">
+              <option value="">— No tenant —</option>
+              {% for tenant in tenants %}
+                <option value="{{ tenant.pk }}"
+                  {% if form_data.tenant_id == tenant.pk|stringformat:"s" %}selected{% endif %}>
+                  {{ tenant.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Tenant Role</label>
+            <select name="tenant_role" class="form-select">
+              <option value="member" {% if form_data.tenant_role == 'member' or not form_data.tenant_role %}selected{% endif %}>Member</option>
+              <option value="moderator" {% if form_data.tenant_role == 'moderator' %}selected{% endif %}>Moderator</option>
+              <option value="admin" {% if form_data.tenant_role == 'admin' %}selected{% endif %}>Admin</option>
+              <option value="owner" {% if form_data.tenant_role == 'owner' %}selected{% endif %}>Owner</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="d-flex justify-content-between">
+      <a href="{% url 'dashboards:manage_users' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-x-circle"></i> Cancel
+      </a>
+      <button type="submit" class="btn btn-primary px-5">
+        <i class="bi bi-person-check-fill"></i> Create User
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+.role-card {
+  display: block;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 18px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .2s, box-shadow .2s;
+  background: white;
+}
+.role-card:hover {
+  border-color: #0078d7;
+}
+.role-card.selected {
+  border-color: #0078d7;
+  box-shadow: 0 0 0 3px rgba(0,120,215,.15);
+  background: #f0f7ff;
+}
+.role-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+</style>
+
+<script>
+function selectRole(radio) {
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+  radio.closest('.role-card').classList.add('selected');
+}
+
+function togglePwd(fieldId, btn) {
+  const input = document.getElementById(fieldId);
+  const isText = input.type === 'text';
+  input.type = isText ? 'password' : 'text';
+  btn.innerHTML = isText ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+}
+</script>
+{% endblock %}

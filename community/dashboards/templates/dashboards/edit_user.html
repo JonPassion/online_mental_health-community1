@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ target.username }} | Admin{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:700px;">
+
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'dashboards:manage_users' %}" class="btn btn-gradient btn-sm">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+    <div>
+      <h2 class="mb-0 fw-bold">Edit User</h2>
+      <small class="text-muted">@{{ target.username }} · joined {{ target.date_joined|date:"M d, Y" }}</small>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="POST" novalidate>
+    {% csrf_token %}
+
+    <!-- Profile Details -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white border-bottom fw-semibold py-3">
+        <i class="bi bi-person-circle text-primary"></i> Profile Details
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-semibold">Username</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-at"></i></span>
+              <input type="text" class="form-control bg-light" value="{{ target.username }}" disabled>
+            </div>
+            <small class="text-muted">Username cannot be changed here.</small>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" name="email" class="form-control"
+                     value="{{ target.email }}" placeholder="user@example.com">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">First Name</label>
+            <input type="text" name="first_name" class="form-control"
+                   value="{{ target.first_name }}" placeholder="First name">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Last Name</label>
+            <input type="text" name="last_name" class="form-control"
+                   value="{{ target.last_name }}" placeholder="Last name">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Role -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white border-bottom fw-semibold py-3">
+        <i class="bi bi-shield-lock text-warning"></i> System Role
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">Controls what this user can access across the entire platform.</p>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="role-card h-100 {% if current_role == 'user' %}selected{% endif %}" for="role_user">
+              <input type="radio" name="system_role" id="role_user" value="user" class="d-none"
+                     {% if current_role == 'user' %}checked{% endif %} onchange="selectRole(this)">
+              <div class="role-icon bg-secondary bg-opacity-10 text-secondary">
+                <i class="bi bi-person-fill"></i>
+              </div>
+              <div class="fw-semibold mt-2">Regular User</div>
+              <small class="text-muted">Standard member access.</small>
+            </label>
+          </div>
+          <div class="col-md-4">
+            <label class="role-card h-100 {% if current_role == 'staff' %}selected{% endif %}" for="role_staff">
+              <input type="radio" name="system_role" id="role_staff" value="staff" class="d-none"
+                     {% if current_role == 'staff' %}checked{% endif %} onchange="selectRole(this)">
+              <div class="role-icon bg-warning bg-opacity-10 text-warning">
+                <i class="bi bi-person-badge-fill"></i>
+              </div>
+              <div class="fw-semibold mt-2">Staff</div>
+              <small class="text-muted">Access to admin &amp; moderation tools.</small>
+            </label>
+          </div>
+          <div class="col-md-4">
+            <label class="role-card h-100 {% if current_role == 'superuser' %}selected{% endif %}" for="role_superuser">
+              <input type="radio" name="system_role" id="role_superuser" value="superuser" class="d-none"
+                     {% if current_role == 'superuser' %}checked{% endif %} onchange="selectRole(this)">
+              <div class="role-icon bg-danger bg-opacity-10 text-danger">
+                <i class="bi bi-shield-fill-check"></i>
+              </div>
+              <div class="fw-semibold mt-2">Superuser</div>
+              <small class="text-muted">Full system control.</small>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save -->
+    <div class="d-flex justify-content-between mb-4">
+      <a href="{% url 'dashboards:manage_users' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-x-circle"></i> Cancel
+      </a>
+      <button type="submit" class="btn btn-primary px-5">
+        <i class="bi bi-check-circle-fill"></i> Save Changes
+      </button>
+    </div>
+  </form>
+
+  <!-- Tenant Memberships -->
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-bottom fw-semibold py-3 d-flex align-items-center gap-2">
+      <i class="bi bi-building text-primary"></i> Tenant Memberships
+      <button class="btn btn-sm btn-outline-primary ms-auto" data-bs-toggle="collapse" data-bs-target="#addTenantPanel">
+        <i class="bi bi-plus-circle"></i> Add to Tenant
+      </button>
+    </div>
+    <div class="card-body">
+
+      <!-- Existing memberships -->
+      {% if tenant_memberships %}
+      <div class="table-responsive mb-3">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Tenant</th>
+              <th>Role</th>
+              <th>Joined</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="membershipRows">
+            {% for m in tenant_memberships %}
+            <tr id="row-{{ m.tenant.pk }}">
+              <td class="fw-semibold">{{ m.tenant.name }}</td>
+              <td>
+                <span class="badge rounded-pill
+                  {% if m.role == 'owner' %}bg-danger
+                  {% elif m.role == 'admin' %}bg-warning text-dark
+                  {% elif m.role == 'moderator' %}bg-info text-dark
+                  {% else %}bg-secondary{% endif %}">
+                  {{ m.get_role_display }}
+                </span>
+              </td>
+              <td class="text-muted small">{{ m.joined_at|date:"M d, Y" }}</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-danger"
+                        onclick="removeMembership('{{ m.tenant.pk }}', '{{ m.tenant.name }}')">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted small" id="noMembershipsMsg">This user is not a member of any tenant.</p>
+      {% endif %}
+
+      <!-- Add to tenant panel (collapsed) -->
+      {% if tenants %}
+      <div class="collapse" id="addTenantPanel">
+        <div class="border rounded p-3 bg-light">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-5">
+              <label class="form-label fw-semibold mb-1">Tenant</label>
+              <select id="newTenantId" class="form-select form-select-sm">
+                {% for t in tenants %}
+                  <option value="{{ t.pk }}">{{ t.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold mb-1">Role</label>
+              <select id="newTenantRole" class="form-select form-select-sm">
+                <option value="member">Member</option>
+                <option value="moderator">Moderator</option>
+                <option value="admin">Admin</option>
+                <option value="owner">Owner</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-primary btn-sm w-100" onclick="addTenantMembership()">
+                <i class="bi bi-check-lg"></i> Assign
+              </button>
+            </div>
+          </div>
+          <div id="tenantMsg" class="mt-2"></div>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<style>
+.role-card {
+  display: block;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 18px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .2s, box-shadow .2s;
+  background: white;
+}
+.role-card:hover { border-color: #0078d7; }
+.role-card.selected {
+  border-color: #0078d7;
+  box-shadow: 0 0 0 3px rgba(0,120,215,.15);
+  background: #f0f7ff;
+}
+.role-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 22px;
+}
+</style>
+
+<script>
+const userId = {{ target.pk }};
+
+function selectRole(radio) {
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+  radio.closest('.role-card').classList.add('selected');
+}
+
+async function addTenantMembership() {
+  const tenantId = document.getElementById('newTenantId').value;
+  const role = document.getElementById('newTenantRole').value;
+  const formData = new FormData();
+  formData.append('tenant_id', tenantId);
+  formData.append('role', role);
+
+  const resp = await fetch(`/dashboard/admin/users/${userId}/assign-tenant/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    body: formData
+  });
+  const data = await resp.json();
+  const msgEl = document.getElementById('tenantMsg');
+  if (data.success) {
+    msgEl.innerHTML = `<div class="alert alert-success py-1 mb-0">Assigned to <strong>${data.tenant}</strong> as <strong>${data.role}</strong>.</div>`;
+    setTimeout(() => location.reload(), 1000);
+  } else {
+    msgEl.innerHTML = `<div class="alert alert-danger py-1 mb-0">${data.error}</div>`;
+  }
+}
+
+async function removeMembership(tenantId, tenantName) {
+  if (!confirm(`Remove from "${tenantName}"?`)) return;
+  const resp = await fetch(`/dashboard/admin/users/${userId}/remove-tenant/${tenantId}/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+  });
+  const data = await resp.json();
+  if (data.success) {
+    const row = document.getElementById(`row-${tenantId}`);
+    if (row) row.remove();
+  }
+}
+
+function getCookie(name) {
+  const val = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name + '='));
+  return val ? decodeURIComponent(val.split('=')[1]) : null;
+}
+</script>
+{% endblock %}
