@@ -31,7 +31,10 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-^y)fu5%q93p*n3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+
+# Allow all hosts for Replit proxy / dev environment
+ALLOWED_HOSTS = ['*']
 
 # Render-specific configuration
 if 'RENDER' in os.environ:
@@ -41,7 +44,7 @@ if 'RENDER' in os.environ:
         from urllib.parse import urlparse
         parsed = urlparse(render_url)
         if parsed.netloc not in ALLOWED_HOSTS:
-            ALLOWED_HOSTS.append(parsed.netloc) 
+            ALLOWED_HOSTS.append(parsed.netloc)
 
 
 # Application definition
