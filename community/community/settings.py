@@ -13,8 +13,18 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-^y)fu5%q93p*n3
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# Build ALLOWED_HOSTS from env, then append the Render service URL automatically
+# Build ALLOWED_HOSTS from env, then append known proxy domains
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+
+# Always allow Replit preview domains and localhost
+for _h in ['.replit.dev', '.kirk.replit.dev', '.worf.replit.dev', 'localhost', '127.0.0.1']:
+    if _h not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_h)
+
+# Add the specific Replit dev domain if provided
+_replit_domain = os.environ.get('REPLIT_DEV_DOMAIN', '')
+if _replit_domain and _replit_domain not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_replit_domain)
 
 if 'RENDER' in os.environ:
     render_url = os.environ.get('RENDER_EXTERNAL_URL', '')
@@ -166,6 +176,19 @@ else:
             'BACKEND': 'channels.layers.InMemoryChannelLayer',
         },
     }
+
+# ─── Email ───────────────────────────────────────────────────────────────────
+
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend'  # prints to console in dev
+)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Community <noreply@community.app>')
 
 # ─── Production hardening ───────────────────────────────────────────────────
 
