@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.urls import reverse
@@ -169,6 +170,23 @@ def profile_settings(request):
         'user': request.user,
     }
     return render(request, 'users/profile_settings.html', context)
+
+
+@login_required
+def change_password(request):
+    """Change password for logged-in user"""
+    form = PasswordChangeForm(request.user, request.POST or None)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # keep the user logged in
+            messages.success(request, 'Your password was updated successfully.')
+            return redirect('users:profile_settings')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+
+    return render(request, 'users/change_password.html', {'form': form})
 
 
 @login_required
