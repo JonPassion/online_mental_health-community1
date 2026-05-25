@@ -1,45 +1,83 @@
+## Render Blueprint — Community Platform
+## Docs: https://render.com/docs/blueprint-spec
+##
+## How to use:
+##   1. Push this repo to GitHub
+##   2. Render dashboard → New → Blueprint → select your repo
+##   3. Render will provision the database, Redis, and web service automatically
+##   4. After first deploy: go to Shell and run:
+##        cd community && python manage.py create_superuser_env
+##      (set DJANGO_SUPERUSER_* env vars in the dashboard first)
+
 services:
+
+  # ── Web service ─────────────────────────────────────────────────────────────
   - type: web
     name: community-app
     env: python
     region: oregon
     plan: free
-    buildCommand: pip install -r community/requirements.txt && cd community && python manage.py collectstatic --noinput && python manage.py migrate --noinput
-    startCommand: cd community && daphne -b 0.0.0.0 -p $PORT community.asgi:application
+    repo: https://github.com/JonPassion/online_mental_health-community1
+    branch: master
+
+    buildCommand: >-
+      pip install -r community/requirements.txt &&
+      cd community &&
+      python manage.py collectstatic --noinput &&
+      python manage.py migrate --noinput
+
+    startCommand: >-
+      cd community &&
+      daphne -b 0.0.0.0 -p $PORT community.asgi:application
+
     healthCheckPath: /health/
+
     envVars:
       - key: DEBUG
         value: "False"
+
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+
+      # Auto-generated secret key — Render creates this once and keeps it stable
       - key: DJANGO_SECRET_KEY
         generateValue: true
+
+      # Wired automatically from the PostgreSQL database below
       - key: DATABASE_URL
         fromDatabase:
           name: community-db
           property: connectionString
+
+      # Wired automatically from the Redis service below
       - key: REDIS_URL
         fromService:
           type: redis
           name: community-redis
           property: connectionString
-      - key: PYTHON_VERSION
-        value: "3.12.0"
-      # ── Initial superuser ────────────────────────────────────────────────
-      # Set these in the Render dashboard under Environment → Secret Files,
-      # then run the one-off job below to create the admin account.
+
+      # ── Superuser credentials ────────────────────────────────────────────
+      # Fill these in on the Render dashboard (Environment tab) before
+      # running the one-off shell command to create the admin account.
       - key: DJANGO_SUPERUSER_USERNAME
-        sync: false          # you fill this in on the Render dashboard
+        sync: false
       - key: DJANGO_SUPERUSER_EMAIL
         sync: false
       - key: DJANGO_SUPERUSER_PASSWORD
         sync: false
 
-databases:
-  - name: community-db
-    plan: free
-    region: oregon
-
+  # ── Redis (Django Channels real-time layer) ──────────────────────────────
   - type: redis
     name: community-redis
-    plan: free
     region: oregon
+    plan: free
     maxmemoryPolicy: noeviction
+    ipAllowList: []   # private — only reachable by services in this project
+
+# ── PostgreSQL database ────────────────────────────────────────────────────
+databases:
+  - name: community-db
+    region: oregon
+    plan: free
+    databaseName: community
+    user: community
