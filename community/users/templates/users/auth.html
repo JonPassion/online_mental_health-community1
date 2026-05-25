@@ -4,9 +4,16 @@
   {% if mode == 'signup' %}Sign Up{% else %}Login{% endif %} | Community
 {% endblock %}
 
+{% block navbar %}{% endblock %}
+{% block sidebar %}{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 <link rel="stylesheet" href="{% static 'css/icons.css' %}">
+<style>
+  .content-wrapper { margin-right: 0 !important; }
+  main { padding: 0 !important; }
+</style>
 {% endblock %}
 
 {% block content %}
