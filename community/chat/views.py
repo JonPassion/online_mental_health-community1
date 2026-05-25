@@ -148,15 +148,17 @@ def send_message(request):
 @login_required
 def chat_dashboard(request):
     """Render the chat dashboard template with real users and rooms"""
-    # Get all users except current user for contacts
     all_users = User.objects.exclude(id=request.user.id)
-    
-    # Get only accessible chat rooms
-    rooms = [room for room in ChatRoom.objects.all() if has_room_access(request.user, room)]
-    
+
+    # Group rooms the user is a member of (or created)
+    group_rooms = [
+        room for room in ChatRoom.objects.filter(is_group=True)
+        if has_room_access(request.user, room)
+    ]
+
     return render(request, 'chat_dash/chadashboard.html', {
         'all_users': all_users,
-        'rooms': rooms,
+        'group_rooms': group_rooms,
         'user': request.user
     })
 

@@ -812,7 +812,6 @@
     <button class="tab active" onclick="openTab('group')">Group Chats</button>
     <button class="tab" onclick="openTab('users')">Users</button>
     <button class="tab" onclick="openTab('inbox')">Inbox</button>
-    <button class="tab" onclick="openTab('anon')">Anonymous</button>
   </div>
 
   <!-- GROUP CHAT TAB -->
@@ -822,31 +821,19 @@
       <button onclick="showJoinGroupModal()" class="btn btn-sm btn-outline-secondary">Join Group</button>
     </div>
     <ul class="chat-list">
-      {% for room in rooms %}
+      {% for room in group_rooms %}
         <li onclick="openChat('group', '{{ room.name }}', {{ room.id }})">
-          {{ room.name }}
-          {% if room.is_group %}
-            <span style="font-size: 12px; color: #666;">(Group)</span>
-          {% endif %}
+          <strong>{{ room.name }}</strong>
+          <span style="font-size: 12px; color: #666; margin-left: 6px;">Group</span>
         </li>
       {% empty %}
-        <li>No group chats available</li>
+        <li style="color:#888; font-style:italic;">No group chats yet. Create or join one above.</li>
       {% endfor %}
     </ul>
   </div>
 
   <!-- USERS TAB -->
   <div id="users" class="content">
-    <!-- Debug info -->
-    <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px;">
-      <small><strong>Debug:</strong> Found {{ all_users|length }} users in template</small>
-      {% if user %}
-        <br><small>Logged in as: {{ user.username }}</small>
-      {% else %}
-        <br><small>Not logged in!</small>
-      {% endif %}
-    </div>
-    
     <div class="user-search">
       <input type="text" id="userSearchInput" placeholder="Search users..." onkeyup="filterUsers()">
     </div>
@@ -914,14 +901,6 @@
         <i class="bi bi-send"></i> Send
       </button>
     </div>
-  </div>
-
-  <!-- ANONYMOUS TAB -->
-  <div id="anon" class="content">
-    <ul class="chat-list">
-      <li onclick="openChat('anon', 'General Anonymous', 0)">General Anonymous</li>
-      <li onclick="openChat('anon', 'Support Chat', 0)">Support Chat</li>
-    </ul>
   </div>
 
   <!-- CHAT WINDOW -->
@@ -1286,23 +1265,51 @@
     }
   }
 
-  // Handle Enter key in chat input
+  // Auto-refresh for open conversation (DM view)
+  let conversationPollingInterval = null;
+
+  const _origOpenConversation = window.openConversation;
+  window.openConversation = function(roomId, username) {
+    if (conversationPollingInterval) {
+      clearInterval(conversationPollingInterval);
+      conversationPollingInterval = null;
+    }
+    _origOpenConversation(roomId, username);
+    conversationPollingInterval = setInterval(() => {
+      loadConversationMessages(roomId);
+    }, 3000);
+  };
+
+  const _origBackToInbox = window.backToInbox;
+  window.backToInbox = function() {
+    if (conversationPollingInterval) {
+      clearInterval(conversationPollingInterval);
+      conversationPollingInterval = null;
+    }
+    _origBackToInbox();
+  };
+
+  // Handle Enter key in chat inputs
   document.addEventListener('DOMContentLoaded', function() {
     const chatInput = document.getElementById('chatInput');
     if (chatInput) {
       chatInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          sendChatMessage();
-        }
+        if (e.key === 'Enter') sendChatMessage();
+      });
+    }
+
+    const conversationInput = document.getElementById('conversationInput');
+    if (conversationInput) {
+      conversationInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendConversationMessage();
       });
     }
   });
 
   // Clean up polling on page unload
   window.addEventListener('beforeunload', () => {
-    if (messagePollingInterval) {
-      clearInterval(messagePollingInterval);
-    }
+    if (messagePollingInterval) clearInterval(messagePollingInterval);
+    if (conversationPollingInterval) clearInterval(conversationPollingInterval);
   });
 
   // User search functionality
