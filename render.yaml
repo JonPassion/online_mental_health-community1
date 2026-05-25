@@ -6,6 +6,7 @@ services:
     plan: free
     buildCommand: pip install -r community/requirements.txt && cd community && python manage.py collectstatic --noinput && python manage.py migrate --noinput
     startCommand: cd community && daphne -b 0.0.0.0 -p $PORT community.asgi:application
+    healthCheckPath: /health/
     envVars:
       - key: DEBUG
         value: "False"

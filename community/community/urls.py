@@ -3,8 +3,10 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
+from community.health import health_check
 
 urlpatterns = [
+    path('health/', health_check, name='health_check'),
     path('admin/', admin.site.urls),
     path('tenants/', include('tenants.urls')),
     path('chat/', include('chat.urls')),
