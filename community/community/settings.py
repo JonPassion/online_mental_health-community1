@@ -36,6 +36,21 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 # Allow all hosts for Replit proxy / dev environment
 ALLOWED_HOSTS = ['*']
 
+# Trust Replit's proxy SSL headers
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# CSRF trusted origins — allow Replit dev and deployed domains
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.replit.dev',
+    'https://*.worf.replit.dev',
+    'https://*.replit.app',
+    'http://localhost:5000',
+    'http://127.0.0.1:5000',
+]
+
+# Allow iframe embedding in Replit preview
+X_FRAME_OPTIONS = 'ALLOWALL'
+
 # Render-specific configuration
 if 'RENDER' in os.environ:
     # Render provides the URL via RENDER_EXTERNAL_URL
