@@ -1,0 +1,79 @@
+Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 48.2/48.2 kB 8.9 MB/s eta 0:00:00
+Building wheels for collected packages: py-ubjson
+  Building wheel for py-ubjson (pyproject.toml): started
+  Building wheel for py-ubjson (pyproject.toml): finished with status 'done'
+  Created wheel for py-ubjson: filename=py_ubjson-0.16.1-cp312-cp312-linux_x86_64.whl size=131524 sha256=abbfbd4d7600ff845349941b98e18dad327da37a24e6d2a943312ad8fbda988e
+Menu
+  Stored in directory: /opt/render/.cache/wheels/c0/a8/73/e1931c0c1125bc84ae955eeb3d8ba9fe23ecd95ee337095267
+Successfully built py-ubjson
+Installing collected packages: py-ubjson, zope-interface, whitenoise, ujson, tzlocal, typing-extensions, txaio, sqlparse, redis, python-dotenv, pyjwt, pycparser, pyasn1, psycopg2-binary, pillow, packaging, msgpack, idna, django-widget-tweaks, constantly, cbor2, automat, attrs, asgiref, pyasn1-modules, incremental, hyperlink, gunicorn, Django, cffi, APScheduler, Twisted, djangorestframework, django-cors-headers, django-apscheduler, dj-database-url, cryptography, channels, service-identity, pyopenssl, djangorestframework_simplejwt, channels_redis, autobahn, daphne
+Successfully installed APScheduler-3.11.0 Django-5.2.7 Twisted-25.5.0 asgiref-3.10.0 attrs-26.1.0 autobahn-25.12.2 automat-25.4.16 cbor2-6.1.1 cffi-2.0.0 channels-4.3.1 channels_redis-4.3.0 constantly-23.10.4 cryptography-48.0.0 daphne-4.2.1 dj-database-url-2.3.0 django-apscheduler-0.7.0 django-cors-headers-4.9.0 django-widget-tweaks-1.5.0 djangorestframework-3.16.1 djangorestframework_simplejwt-5.5.1 gunicorn-23.0.0 hyperlink-21.0.0 idna-3.16 incremental-24.11.0 msgpack-1.1.2 packaging-26.2 pillow-12.2.0 psycopg2-binary-2.9.10 py-ubjson-0.16.1 pyasn1-0.6.3 pyasn1-modules-0.4.2 pycparser-3.0 pyjwt-2.13.0 pyopenssl-26.2.0 python-dotenv-1.2.2 redis-6.4.0 service-identity-24.2.0 sqlparse-0.5.5 txaio-25.12.2 typing-extensions-4.15.0 tzlocal-5.3.1 ujson-5.12.1 whitenoise-6.9.0 zope-interface-8.4
+[notice] A new release of pip is available: 23.2.1 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip
+163 static files copied to '/opt/render/project/src/community/staticfiles', 19 unmodified, 520 post-processed.
+Operations to perform:
+  Apply all migrations: admin, auth, chat, contenttypes, django_apscheduler, posts, sessions, tenants, users
+Running migrations:
+Traceback (most recent call last):
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 103, in _execute
+    return self.cursor.execute(sql)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.DuplicateColumn: column "user_id" of relation "chat_message" already exists
+The above exception was the direct cause of the following exception:
+Traceback (most recent call last):
+  File "/opt/render/project/src/community/manage.py", line 22, in <module>
+    main()
+  File "/opt/render/project/src/community/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/core/management/__init__.py", line 436, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/core/management/base.py", line 416, in run_from_argv
+    self.execute(*args, **cmd_options)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/core/management/base.py", line 460, in execute
+    output = self.handle(*args, **options)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/core/management/base.py", line 107, in wrapper
+    res = handle_func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/core/management/commands/migrate.py", line 353, in handle
+    post_migrate_state = executor.migrate(
+                         ^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/migrations/executor.py", line 135, in migrate
+    state = self._migrate_all_forwards(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/migrations/executor.py", line 167, in _migrate_all_forwards
+    state = self.apply_migration(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/migrations/executor.py", line 255, in apply_migration
+    state = migration.apply(state, schema_editor)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/migrations/migration.py", line 132, in apply
+    operation.database_forwards(
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/migrations/operations/fields.py", line 110, in database_forwards
+    schema_editor.add_field(
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/base/schema.py", line 775, in add_field
+    self.execute(sql, params or None)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/postgresql/schema.py", line 45, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/base/schema.py", line 204, in execute
+    cursor.execute(sql, params)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 103, in _execute
+    return self.cursor.execute(sql)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: column "user_id" of relation "chat_message" already exists
+==> Build failed 😞
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
