@@ -2,7 +2,9 @@
 {% block title %}{{ post.title }}{% endblock %}
 {% block content %}
 <div class="container py-4">
-  <div class="card shadow-sm">
+
+  <!-- Post Card -->
+  <div class="card shadow-sm mb-4">
     <div class="card-header">
       <div class="d-flex align-items-center gap-3">
         <a href="{% url 'posts:post_list' %}" class="btn btn-gradient btn-sm">
@@ -22,13 +24,154 @@
           By <strong>{{ post.author.username }}</strong> on {{ post.created_at|date:"F d, Y H:i" }}
         </small>
       </div>
-      <div class="post-content">
+      <div class="post-content mb-4">
         {{ post.content|linebreaks }}
       </div>
-    </div>
-    <div class="card-footer">
-      <a href="{% url 'posts:post_list' %}" class="btn btn-secondary">← Back to Posts</a>
+
+      <!-- Reactions -->
+      {% if user.is_authenticated %}
+      <div class="d-flex flex-wrap gap-2 mb-2" id="reaction-bar">
+        {% for r in reaction_summary %}
+        <button
+          class="btn btn-sm reaction-btn {% if r.active %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+          data-type="{{ r.type }}"
+          onclick="toggleReaction('{{ r.type }}')"
+          id="react-{{ r.type }}">
+          {{ r.emoji }} <span class="react-count" id="count-{{ r.type }}">{{ r.count }}</span>
+        </button>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
   </div>
+
+  <!-- Comments Section -->
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Replies
+        <span class="badge bg-secondary ms-1" id="comment-count">{{ comments|length }}</span>
+      </h5>
+    </div>
+    <div class="card-body p-0">
+
+      <!-- Existing comments -->
+      <ul class="list-group list-group-flush" id="comments-list">
+        {% for comment in comments %}
+        <li class="list-group-item">
+          <div class="d-flex gap-2">
+            <div class="fw-bold text-primary" style="min-width:90px;">{{ comment.author.username }}</div>
+            <div class="flex-grow-1">
+              <div>{{ comment.content|linebreaks }}</div>
+              <small class="text-muted">{{ comment.created_at|date:"M d, Y H:i" }}</small>
+            </div>
+          </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted" id="no-comments-msg">No replies yet. Be the first!</li>
+        {% endfor %}
+      </ul>
+
+      <!-- Add comment form -->
+      {% if user.is_authenticated %}
+      <div class="p-3 border-top bg-light">
+        <form id="comment-form" onsubmit="submitComment(event)">
+          {% csrf_token %}
+          <div class="d-flex gap-2">
+            <textarea id="comment-input" class="form-control" rows="2"
+              placeholder="Write a reply..." required style="resize:none;"></textarea>
+            <button type="submit" class="btn btn-primary align-self-end">
+              <i class="bi bi-send"></i> Reply
+            </button>
+          </div>
+        </form>
+      </div>
+      {% else %}
+      <div class="p-3 text-muted">
+        <a href="{% url 'users:auth' %}">Log in</a> to reply.
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
 </div>
+
+<script>
+const postId = {{ post.pk }};
+const csrfToken = '{{ csrf_token }}';
+
+async function toggleReaction(type) {
+  const formData = new FormData();
+  formData.append('reaction_type', type);
+
+  const resp = await fetch(`/posts/${postId}/react/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrfToken },
+    body: formData,
+  });
+
+  if (!resp.ok) return;
+  const data = await resp.json();
+
+  // Update all buttons
+  document.querySelectorAll('.reaction-btn').forEach(btn => {
+    const t = btn.dataset.type;
+    const count = data.counts[t] ?? 0;
+    btn.querySelector('.react-count').textContent = count;
+    if (t === data.user_reaction) {
+      btn.classList.add('btn-primary');
+      btn.classList.remove('btn-outline-secondary');
+    } else {
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-outline-secondary');
+    }
+  });
+}
+
+async function submitComment(e) {
+  e.preventDefault();
+  const input = document.getElementById('comment-input');
+  const content = input.value.trim();
+  if (!content) return;
+
+  const formData = new FormData();
+  formData.append('content', content);
+
+  const resp = await fetch(`/posts/${postId}/comment/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': csrfToken,
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    body: formData,
+  });
+
+  if (!resp.ok) return;
+  const data = await resp.json();
+
+  // Remove "no replies" placeholder if present
+  const noMsg = document.getElementById('no-comments-msg');
+  if (noMsg) noMsg.remove();
+
+  // Append new comment
+  const list = document.getElementById('comments-list');
+  const li = document.createElement('li');
+  li.className = 'list-group-item';
+  li.innerHTML = `
+    <div class="d-flex gap-2">
+      <div class="fw-bold text-primary" style="min-width:90px;">${data.author}</div>
+      <div class="flex-grow-1">
+        <div><p>${data.content}</p></div>
+        <small class="text-muted">${data.created_at}</small>
+      </div>
+    </div>`;
+  list.appendChild(li);
+
+  // Update count badge
+  const badge = document.getElementById('comment-count');
+  badge.textContent = parseInt(badge.textContent) + 1;
+
+  input.value = '';
+}
+</script>
 {% endblock %}
