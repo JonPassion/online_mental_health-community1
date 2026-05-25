@@ -1,21 +1,344 @@
 {% extends "base.html" %}
 {% block title %}Create User | Admin{% endblock %}
-{% block content %}
-<div class="container py-4" style="max-width:700px;">
 
-  <div class="d-flex align-items-center gap-3 mb-4">
-    <a href="{% url 'dashboards:manage_users' %}" class="btn btn-gradient btn-sm">
+{% block extra_css %}
+<style>
+  .admin-page-header {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    border-radius: 16px;
+    padding: 28px 32px;
+    color: white;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .admin-page-header .header-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+  .admin-page-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+  .admin-page-header p {
+    margin: 0;
+    opacity: .78;
+    font-size: .92rem;
+  }
+  .admin-page-header .back-btn {
+    margin-left: auto;
+    background: rgba(255,255,255,0.18);
+    border: 1.5px solid rgba(255,255,255,0.35);
+    color: white;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-weight: 600;
+    font-size: .9rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    transition: background .2s;
+  }
+  .admin-page-header .back-btn:hover {
+    background: rgba(255,255,255,0.28);
+    color: white;
+  }
+
+  .section-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #eef0f5;
+    box-shadow: 0 2px 12px rgba(106,17,203,.06);
+    margin-bottom: 22px;
+    overflow: hidden;
+  }
+  .section-card .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f0f2f8;
+    background: #fafbff;
+  }
+  .section-card .section-header .section-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+  }
+  .section-card .section-header h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1a1a2e;
+  }
+  .section-card .section-header small {
+    color: #8892a4;
+    font-size: .8rem;
+    display: block;
+    margin-top: 1px;
+  }
+  .section-card .section-body {
+    padding: 24px;
+  }
+
+  /* Input styling */
+  .field-group label {
+    font-weight: 600;
+    font-size: .85rem;
+    color: #3d4563;
+    margin-bottom: 7px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .field-group label .req { color: #e5534b; }
+  .styled-input {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #e2e6f0;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .2s, box-shadow .2s;
+    background: white;
+  }
+  .styled-input:focus-within {
+    border-color: #6a11cb;
+    box-shadow: 0 0 0 3px rgba(106,17,203,.1);
+  }
+  .styled-input .input-icon {
+    padding: 0 14px;
+    color: #9aa3bb;
+    font-size: 16px;
+    background: #f8f9fc;
+    border-right: 1.5px solid #e2e6f0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .styled-input input {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 10px 14px;
+    font-size: .93rem;
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    height: 44px;
+  }
+  .styled-input .toggle-btn {
+    background: none;
+    border: none;
+    padding: 0 14px;
+    color: #9aa3bb;
+    cursor: pointer;
+    font-size: 15px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .styled-input .toggle-btn:hover { color: #6a11cb; }
+
+  /* Role cards */
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 640px) { .roles-grid { grid-template-columns: 1fr; } }
+
+  .role-pick-card {
+    position: relative;
+    border: 2px solid #e8ebf5;
+    border-radius: 14px;
+    padding: 20px 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: all .22s ease;
+    background: white;
+  }
+  .role-pick-card:hover {
+    border-color: #b388ff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(106,17,203,.1);
+  }
+  .role-pick-card.selected {
+    border-color: #6a11cb;
+    background: linear-gradient(160deg, #f7f0ff 0%, #eef5ff 100%);
+    box-shadow: 0 0 0 3px rgba(106,17,203,.12), 0 6px 20px rgba(106,17,203,.1);
+  }
+  .role-pick-card input[type="radio"] { display: none; }
+  .role-pick-card .check-mark {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #d0d5e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: transparent;
+    transition: all .2s;
+  }
+  .role-pick-card.selected .check-mark {
+    background: #6a11cb;
+    border-color: #6a11cb;
+    color: white;
+  }
+  .role-pick-card .role-bubble {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+  .role-pick-card .role-name {
+    font-weight: 700;
+    font-size: .95rem;
+    color: #1a1a2e;
+    margin-bottom: 5px;
+  }
+  .role-pick-card .role-desc {
+    font-size: .78rem;
+    color: #8892a4;
+    line-height: 1.45;
+  }
+  /* Role colours */
+  .role-user .role-bubble { background: #f0f2f8; color: #5a657d; }
+  .role-staff .role-bubble { background: #fff8e6; color: #d4860a; }
+  .role-superuser .role-bubble { background: #fff0f0; color: #d63031; }
+  .role-pick-card.selected.role-user { border-color: #6a11cb; }
+  .role-pick-card.selected.role-staff { border-color: #f0a500; box-shadow: 0 0 0 3px rgba(240,165,0,.12); }
+  .role-pick-card.selected.role-staff .check-mark { background: #f0a500; border-color: #f0a500; }
+  .role-pick-card.selected.role-superuser { border-color: #d63031; box-shadow: 0 0 0 3px rgba(214,48,49,.12); }
+  .role-pick-card.selected.role-superuser .check-mark { background: #d63031; border-color: #d63031; }
+
+  /* Tenant assignment */
+  .tenant-assign-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 560px) { .tenant-assign-grid { grid-template-columns: 1fr; } }
+
+  .custom-select-wrap {
+    border: 1.5px solid #e2e6f0;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .2s, box-shadow .2s;
+    background: white;
+  }
+  .custom-select-wrap:focus-within {
+    border-color: #6a11cb;
+    box-shadow: 0 0 0 3px rgba(106,17,203,.1);
+  }
+  .custom-select-wrap select {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 10px 14px;
+    height: 44px;
+    font-size: .93rem;
+    width: 100%;
+    background: transparent;
+    appearance: auto;
+  }
+
+  .optional-badge {
+    font-size: .72rem;
+    font-weight: 600;
+    background: #f0f2f8;
+    color: #7a84a0;
+    border-radius: 20px;
+    padding: 2px 10px;
+    letter-spacing: .02em;
+  }
+
+  /* Action bar */
+  .action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+  }
+  .btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 22px;
+    border: 1.5px solid #d0d5e8;
+    border-radius: 10px;
+    background: white;
+    color: #5a657d;
+    font-weight: 600;
+    font-size: .9rem;
+    text-decoration: none;
+    transition: all .2s;
+  }
+  .btn-cancel:hover { border-color: #6a11cb; color: #6a11cb; background: #f7f0ff; }
+  .btn-create {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 32px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    color: white;
+    font-weight: 700;
+    font-size: .95rem;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: 0 4px 14px rgba(106,17,203,.25);
+  }
+  .btn-create:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(106,17,203,.35);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:680px; margin:0 auto;">
+
+  <!-- Page header -->
+  <div class="admin-page-header">
+    <div class="header-icon"><i class="bi bi-person-plus-fill"></i></div>
+    <div>
+      <h2>Create New User</h2>
+      <p>Fill in the details below to add a new account to the platform.</p>
+    </div>
+    <a href="{% url 'dashboards:manage_users' %}" class="back-btn">
       <i class="bi bi-arrow-left"></i> Back
     </a>
-    <div>
-      <h2 class="mb-0 fw-bold">Create New User</h2>
-      <small class="text-muted">Fill in the details below to add a new account.</small>
-    </div>
   </div>
 
   {% if messages %}
     {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3 mb-3" role="alert">
+        <i class="bi bi-{% if message.tags == 'error' %}exclamation-triangle{% else %}check-circle{% endif %}-fill me-2"></i>
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
@@ -25,49 +348,53 @@
   <form method="POST" novalidate>
     {% csrf_token %}
 
-    <!-- Account Details -->
-    <div class="card shadow-sm border-0 mb-4">
-      <div class="card-header bg-white border-bottom fw-semibold py-3">
-        <i class="bi bi-person-circle text-primary"></i> Account Details
+    <!-- ① Account Details -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon" style="background:#eef5ff; color:#2575fc;">
+          <i class="bi bi-person-circle"></i>
+        </div>
+        <div>
+          <h5>Account Details</h5>
+          <small>Basic credentials for the new user</small>
+        </div>
       </div>
-      <div class="card-body">
+      <div class="section-body">
         <div class="row g-3">
-          <div class="col-12">
-            <label class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-at"></i></span>
-              <input type="text" name="username" class="form-control"
+          <div class="col-12 field-group">
+            <label>Username <span class="req">*</span></label>
+            <div class="styled-input">
+              <span class="input-icon"><i class="bi bi-at"></i></span>
+              <input type="text" name="username"
                      value="{{ form_data.username|default:'' }}"
                      placeholder="e.g. johndoe" required autofocus>
             </div>
           </div>
-          <div class="col-12">
-            <label class="form-label fw-semibold">Email Address</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-              <input type="email" name="email" class="form-control"
+          <div class="col-12 field-group">
+            <label>Email Address</label>
+            <div class="styled-input">
+              <span class="input-icon"><i class="bi bi-envelope"></i></span>
+              <input type="email" name="email"
                      value="{{ form_data.email|default:'' }}"
                      placeholder="user@example.com">
             </div>
           </div>
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-lock"></i></span>
-              <input type="password" name="password" id="password" class="form-control"
-                     placeholder="Set a password" required>
-              <button type="button" class="btn btn-outline-secondary" onclick="togglePwd('password', this)">
+          <div class="col-md-6 field-group">
+            <label>Password <span class="req">*</span></label>
+            <div class="styled-input">
+              <span class="input-icon"><i class="bi bi-lock"></i></span>
+              <input type="password" name="password" id="password" placeholder="Set a password" required>
+              <button type="button" class="toggle-btn" onclick="togglePwd('password', this)">
                 <i class="bi bi-eye"></i>
               </button>
             </div>
           </div>
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Confirm Password <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-              <input type="password" name="confirm_password" id="confirm_password" class="form-control"
-                     placeholder="Repeat password" required>
-              <button type="button" class="btn btn-outline-secondary" onclick="togglePwd('confirm_password', this)">
+          <div class="col-md-6 field-group">
+            <label>Confirm Password <span class="req">*</span></label>
+            <div class="styled-input">
+              <span class="input-icon"><i class="bi bi-lock-fill"></i></span>
+              <input type="password" name="confirm_password" id="confirm_password" placeholder="Repeat password" required>
+              <button type="button" class="toggle-btn" onclick="togglePwd('confirm_password', this)">
                 <i class="bi bi-eye"></i>
               </button>
             </div>
@@ -76,146 +403,118 @@
       </div>
     </div>
 
-    <!-- System Role -->
-    <div class="card shadow-sm border-0 mb-4">
-      <div class="card-header bg-white border-bottom fw-semibold py-3">
-        <i class="bi bi-shield-lock text-warning"></i> System Role
+    <!-- ② System Role -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon" style="background:#fff8e6; color:#d4860a;">
+          <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <div>
+          <h5>System Role</h5>
+          <small>Controls platform-wide access permissions</small>
+        </div>
       </div>
-      <div class="card-body">
-        <p class="text-muted small mb-3">Controls what the user can access across the entire platform.</p>
-        <div class="row g-3">
-          {% for value, label, desc, color, icon in role_options %}
-          {% endfor %}
+      <div class="section-body">
+        <div class="roles-grid">
 
-          <div class="col-md-4">
-            <label class="role-card h-100 {% if form_data.system_role == 'user' or not form_data %}selected{% endif %}"
-                   for="role_user">
-              <input type="radio" name="system_role" id="role_user" value="user" class="d-none"
-                     {% if form_data.system_role == 'user' or not form_data %}checked{% endif %}
-                     onchange="selectRole(this)">
-              <div class="role-icon bg-secondary bg-opacity-10 text-secondary">
-                <i class="bi bi-person-fill"></i>
-              </div>
-              <div class="fw-semibold mt-2">Regular User</div>
-              <small class="text-muted">Standard member access. Can post and chat.</small>
-            </label>
-          </div>
+          <label class="role-pick-card role-user {% if form_data.system_role == 'user' or not form_data %}selected{% endif %}" for="role_user">
+            <input type="radio" name="system_role" id="role_user" value="user"
+                   {% if form_data.system_role == 'user' or not form_data %}checked{% endif %}
+                   onchange="selectRole(this)">
+            <div class="check-mark"><i class="bi bi-check"></i></div>
+            <div class="role-bubble"><i class="bi bi-person-fill"></i></div>
+            <div class="role-name">Regular User</div>
+            <div class="role-desc">Standard member access. Can post, chat, and interact.</div>
+          </label>
 
-          <div class="col-md-4">
-            <label class="role-card h-100 {% if form_data.system_role == 'staff' %}selected{% endif %}"
-                   for="role_staff">
-              <input type="radio" name="system_role" id="role_staff" value="staff" class="d-none"
-                     {% if form_data.system_role == 'staff' %}checked{% endif %}
-                     onchange="selectRole(this)">
-              <div class="role-icon bg-warning bg-opacity-10 text-warning">
-                <i class="bi bi-person-badge-fill"></i>
-              </div>
-              <div class="fw-semibold mt-2">Staff</div>
-              <small class="text-muted">Access to the admin dashboard and moderation tools.</small>
-            </label>
-          </div>
+          <label class="role-pick-card role-staff {% if form_data.system_role == 'staff' %}selected{% endif %}" for="role_staff">
+            <input type="radio" name="system_role" id="role_staff" value="staff"
+                   {% if form_data.system_role == 'staff' %}checked{% endif %}
+                   onchange="selectRole(this)">
+            <div class="check-mark"><i class="bi bi-check"></i></div>
+            <div class="role-bubble"><i class="bi bi-person-badge-fill"></i></div>
+            <div class="role-name">Staff</div>
+            <div class="role-desc">Access to admin dashboard and moderation tools.</div>
+          </label>
 
-          <div class="col-md-4">
-            <label class="role-card h-100 {% if form_data.system_role == 'superuser' %}selected{% endif %}"
-                   for="role_superuser">
-              <input type="radio" name="system_role" id="role_superuser" value="superuser" class="d-none"
-                     {% if form_data.system_role == 'superuser' %}checked{% endif %}
-                     onchange="selectRole(this)">
-              <div class="role-icon bg-danger bg-opacity-10 text-danger">
-                <i class="bi bi-shield-fill-check"></i>
-              </div>
-              <div class="fw-semibold mt-2">Superuser</div>
-              <small class="text-muted">Full system control, including all admin features.</small>
-            </label>
-          </div>
+          <label class="role-pick-card role-superuser {% if form_data.system_role == 'superuser' %}selected{% endif %}" for="role_superuser">
+            <input type="radio" name="system_role" id="role_superuser" value="superuser"
+                   {% if form_data.system_role == 'superuser' %}checked{% endif %}
+                   onchange="selectRole(this)">
+            <div class="check-mark"><i class="bi bi-check"></i></div>
+            <div class="role-bubble"><i class="bi bi-shield-fill-check"></i></div>
+            <div class="role-name">Superuser</div>
+            <div class="role-desc">Full system control including all admin features.</div>
+          </label>
+
         </div>
       </div>
     </div>
 
-    <!-- Tenant Assignment (optional) -->
+    <!-- ③ Tenant Assignment (optional) -->
     {% if tenants %}
-    <div class="card shadow-sm border-0 mb-4">
-      <div class="card-header bg-white border-bottom fw-semibold py-3">
-        <i class="bi bi-building text-primary"></i> Tenant Assignment
-        <span class="badge bg-light text-muted border ms-2" style="font-weight:400;">Optional</span>
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon" style="background:#f0fff4; color:#27ae60;">
+          <i class="bi bi-building"></i>
+        </div>
+        <div>
+          <h5>Tenant Assignment <span class="optional-badge ms-2">Optional</span></h5>
+          <small>Add this user to a tenant community with a specific role</small>
+        </div>
       </div>
-      <div class="card-body">
-        <p class="text-muted small mb-3">Optionally add this user to a tenant community with a specific role.</p>
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Tenant</label>
-            <select name="tenant_id" class="form-select">
-              <option value="">— No tenant —</option>
-              {% for tenant in tenants %}
-                <option value="{{ tenant.pk }}"
-                  {% if form_data.tenant_id == tenant.pk|stringformat:"s" %}selected{% endif %}>
-                  {{ tenant.name }}
-                </option>
-              {% endfor %}
-            </select>
+      <div class="section-body">
+        <div class="tenant-assign-grid">
+          <div class="field-group">
+            <label><i class="bi bi-building" style="color:#6a11cb;"></i> Tenant</label>
+            <div class="custom-select-wrap">
+              <select name="tenant_id">
+                <option value="">— No tenant —</option>
+                {% for tenant in tenants %}
+                  <option value="{{ tenant.pk }}"
+                    {% if form_data.tenant_id == tenant.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ tenant.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
           </div>
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Tenant Role</label>
-            <select name="tenant_role" class="form-select">
-              <option value="member" {% if form_data.tenant_role == 'member' or not form_data.tenant_role %}selected{% endif %}>Member</option>
-              <option value="moderator" {% if form_data.tenant_role == 'moderator' %}selected{% endif %}>Moderator</option>
-              <option value="admin" {% if form_data.tenant_role == 'admin' %}selected{% endif %}>Admin</option>
-              <option value="owner" {% if form_data.tenant_role == 'owner' %}selected{% endif %}>Owner</option>
-            </select>
+          <div class="field-group">
+            <label><i class="bi bi-tag" style="color:#6a11cb;"></i> Tenant Role</label>
+            <div class="custom-select-wrap">
+              <select name="tenant_role">
+                <option value="member"     {% if form_data.tenant_role == 'member'    or not form_data.tenant_role %}selected{% endif %}>Member</option>
+                <option value="moderator"  {% if form_data.tenant_role == 'moderator'  %}selected{% endif %}>Moderator</option>
+                <option value="admin"      {% if form_data.tenant_role == 'admin'      %}selected{% endif %}>Admin</option>
+                <option value="owner"      {% if form_data.tenant_role == 'owner'      %}selected{% endif %}>Owner</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
     </div>
     {% endif %}
 
-    <!-- Actions -->
-    <div class="d-flex justify-content-between">
-      <a href="{% url 'dashboards:manage_users' %}" class="btn btn-outline-secondary">
+    <!-- Action bar -->
+    <div class="action-bar">
+      <a href="{% url 'dashboards:manage_users' %}" class="btn-cancel">
         <i class="bi bi-x-circle"></i> Cancel
       </a>
-      <button type="submit" class="btn btn-primary px-5">
+      <button type="submit" class="btn-create">
         <i class="bi bi-person-check-fill"></i> Create User
       </button>
     </div>
+
   </form>
 </div>
+{% endblock %}
 
-<style>
-.role-card {
-  display: block;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 18px;
-  cursor: pointer;
-  text-align: center;
-  transition: border-color .2s, box-shadow .2s;
-  background: white;
-}
-.role-card:hover {
-  border-color: #0078d7;
-}
-.role-card.selected {
-  border-color: #0078d7;
-  box-shadow: 0 0 0 3px rgba(0,120,215,.15);
-  background: #f0f7ff;
-}
-.role-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-}
-</style>
-
+{% block extra_js %}
 <script>
 function selectRole(radio) {
-  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
-  radio.closest('.role-card').classList.add('selected');
+  document.querySelectorAll('.role-pick-card').forEach(c => c.classList.remove('selected'));
+  radio.closest('.role-pick-card').classList.add('selected');
 }
-
 function togglePwd(fieldId, btn) {
   const input = document.getElementById(fieldId);
   const isText = input.type === 'text';
